@@ -30,7 +30,6 @@ import com.journeyloginc.invisibleapps.R;
 
 public class HomeFragment extends Fragment {
 
-    private HomeViewModel homeViewModel;
 
     //webview
     public WebView mWebView;
