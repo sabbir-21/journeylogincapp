@@ -9,9 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.SslErrorHandler;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,6 +37,7 @@ public class HomeFragment extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
     //custom error
     RelativeLayout relativeLayout;
+    Button button;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -41,6 +45,7 @@ public class HomeFragment extends Fragment {
         mWebView = (WebView) v.findViewById(R.id.webview_home);
         swipeRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe);
         relativeLayout = (RelativeLayout) v.findViewById(R.id.no_internet_layout);
+        button = (Button) v.findViewById(R.id.retry);
         mWebView.loadUrl("https://journeyloginc.com");
 
         // Enable Javascript
@@ -64,8 +69,21 @@ public class HomeFragment extends Fragment {
             public void onPageFinished(WebView mWebView, String url){
                 swipeRefreshLayout.setRefreshing(false);
             } //swipe after..
+            //on view page error
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                internetCheck();
+                super.onReceivedError(view, request, error);
+            }
         });
         internetCheck();
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                internetCheck();
+            }
+        });
         return v;
     }
     // custom error
@@ -93,15 +111,18 @@ public class HomeFragment extends Fragment {
             mWebView.setVisibility(View.VISIBLE);
             swipeRefreshLayout.setVisibility(View.VISIBLE);
             relativeLayout.setVisibility(View.GONE);
+            mWebView.reload();
 
         }else if(wifi.isConnected()){
             mWebView.setVisibility(View.VISIBLE);
             swipeRefreshLayout.setVisibility(View.VISIBLE);
             relativeLayout.setVisibility(View.GONE);
+            mWebView.reload();
         }else{
             mWebView.setVisibility(View.GONE);
             swipeRefreshLayout.setVisibility(View.GONE);
             relativeLayout.setVisibility(View.VISIBLE);
+            mWebView.reload();
         }
 
     } //end internet check
