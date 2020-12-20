@@ -1,13 +1,20 @@
 package com.journeyloginc.invisibleapps.ui.home;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.http.SslError;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,12 +32,15 @@ public class HomeFragment extends Fragment {
     //webview
     public WebView mWebView;
     private SwipeRefreshLayout swipeRefreshLayout;
+    //custom error
+    RelativeLayout relativeLayout;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         View v=inflater.inflate(R.layout.fragment_home, container, false);
         mWebView = (WebView) v.findViewById(R.id.webview_home);
         swipeRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe);
+        relativeLayout = (RelativeLayout) v.findViewById(R.id.no_internet_layout);
         mWebView.loadUrl("https://journeyloginc.com");
 
         // Enable Javascript
@@ -38,6 +48,7 @@ public class HomeFragment extends Fragment {
         webSettings.setJavaScriptEnabled(true);
         mWebView.getSettings().setSupportZoom(true);
         mWebView.getSettings().setAppCacheEnabled(true);
+        mWebView.getSettings().setDomStorageEnabled(true);
         // on refresh
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -49,10 +60,49 @@ public class HomeFragment extends Fragment {
 
         // Force links and redirects to open in the WebView instead of in a browser
         mWebView.setWebViewClient(new WebViewClient() {
+            //swipe after refresh function
             public void onPageFinished(WebView mWebView, String url){
                 swipeRefreshLayout.setRefreshing(false);
-            }
+            } //swipe after..
         });
+        internetCheck();
         return v;
     }
+    // custom error
+
+    //custom error ends
+
+    /*
+    @Override
+    public void onBackPressed(){
+
+        if (webView.canGoBack()){
+            webView.goBack();
+        }else {
+            finish();
+        }
+    }
+     */
+    //check internet connection
+    public void internetCheck() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) this.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mobiledata = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        NetworkInfo wifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        if(mobiledata.isConnected()){
+            mWebView.setVisibility(View.VISIBLE);
+            swipeRefreshLayout.setVisibility(View.VISIBLE);
+            relativeLayout.setVisibility(View.GONE);
+
+        }else if(wifi.isConnected()){
+            mWebView.setVisibility(View.VISIBLE);
+            swipeRefreshLayout.setVisibility(View.VISIBLE);
+            relativeLayout.setVisibility(View.GONE);
+        }else{
+            mWebView.setVisibility(View.GONE);
+            swipeRefreshLayout.setVisibility(View.GONE);
+            relativeLayout.setVisibility(View.VISIBLE);
+        }
+
+    } //end internet check
 }
