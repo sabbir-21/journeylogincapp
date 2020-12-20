@@ -9,12 +9,26 @@
             android:icon="@drawable/ic_menu_camera"
             android:title="@string/menu_home" />
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="@string/menu_gallery" />
+            android:id="@+id/nav_blogs"
+            android:icon="@drawable/ic_baseline_library_books_24"
+            android:title="@string/menu_blogs" />
         <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="@string/menu_slideshow" />
+            android:id="@+id/nav_Create_Post"
+            android:icon="@drawable/ic_baseline_library_add_24"
+            android:title="@string/menu_create_post" />
+        <item
+            android:id="@+id/nav_login"
+            android:icon="@drawable/ic_baseline_account_circle_24"
+            android:title="@string/menu_login" />
     </group>
+    <item android:title="Communicate">
+        <menu>
+            <item android:id="@+id/nav_rate"
+                android:title="Rate now"
+                android:icon="@drawable/ic_baseline_rate_review_24"/>
+            <item android:id="@+id/nav_share"
+                android:title="Share"
+                android:icon="@drawable/ic_baseline_share_24"/>
+        </menu>
+    </item>
 </menu>

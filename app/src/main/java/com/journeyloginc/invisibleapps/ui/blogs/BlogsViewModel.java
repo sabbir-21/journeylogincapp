@@ -1,16 +1,16 @@
-package com.journeyloginc.invisibleapps.ui.gallery;
+package com.journeyloginc.invisibleapps.ui.blogs;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class GalleryViewModel extends ViewModel {
+public class BlogsViewModel extends ViewModel {
 
     private MutableLiveData<String> mText;
 
-    public GalleryViewModel() {
+    public BlogsViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is gallery fragment");
+        mText.setValue("This is blogs fragment");
     }
 
     public LiveData<String> getText() {

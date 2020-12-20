@@ -1,4 +1,4 @@
-package com.journeyloginc.invisibleapps.ui.slideshow;
+package com.journeyloginc.invisibleapps.ui.create;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,18 +13,19 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.journeyloginc.invisibleapps.R;
+import com.journeyloginc.invisibleapps.ui.create.CreateViewModel;
 
-public class SlideshowFragment extends Fragment {
+public class CreateFragment extends Fragment {
 
-    private SlideshowViewModel slideshowViewModel;
+    private CreateViewModel createViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        slideshowViewModel =
-                ViewModelProviders.of(this).get(SlideshowViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_slideshow, container, false);
-        final TextView textView = root.findViewById(R.id.text_slideshow);
-        slideshowViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        createViewModel =
+                ViewModelProviders.of(this).get(CreateViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_create, container, false);
+        final TextView textView = root.findViewById(R.id.text_create);
+        createViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);
