@@ -9,6 +9,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,7 +25,9 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 //import class for Uploading part start
@@ -57,6 +61,9 @@ public class HomeActivity extends AppCompatActivity {
         private ValueCallback<Uri[]> mFilePathCallback;
         private String mCameraPhotoPath;
 
+        RelativeLayout relativeLayout;
+        Button nointernetBtn;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +76,13 @@ public class HomeActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
 
 
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient(){
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                internetCheck();
+                super.onReceivedError(view, errorCode, description, failingUrl);
+            }
+        });
         //user cookies
         webView.getSettings().setAllowFileAccess(true);
         webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
@@ -84,20 +97,22 @@ public class HomeActivity extends AppCompatActivity {
         webSettings.setSaveFormData(true);
         webSettings.setEnableSmoothTransition(true);
 
+
+
         //progress bar
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         webView.setWebChromeClient(new WebChromeClient() {
-            // page loading progress, gone when fully loaded
+            // page loading progress, invisible when fully loaded
             public void onProgressChanged(WebView view, int progress) {
 
-                if (progress < 100 && progressBar.getVisibility() == ProgressBar.GONE) {
+                if (progress < 100 && progressBar.getVisibility() == ProgressBar.INVISIBLE) {
                     progressBar.setVisibility(ProgressBar.VISIBLE);
                 }
 
                 if (progress == 100) {
-                    progressBar.setVisibility(ProgressBar.GONE);
+                    progressBar.setVisibility(ProgressBar.INVISIBLE);
                 }
                 progressBar.setProgress(progress);
             }
@@ -144,17 +159,13 @@ public class HomeActivity extends AppCompatActivity {
                 } else {
                     intentArray = new Intent[0];
                 }
-
                 Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
                 chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent);
                 chooserIntent.putExtra(Intent.EXTRA_TITLE, getString(R.string.image_chooser));
                 chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
-
                 startActivityForResult(chooserIntent, FILECHOOSER_RESULTCODE);
-
                 return true;
             }
-
             // creating image files (Lollipop only)
             private File createImageFile() throws IOException {
 
@@ -163,16 +174,13 @@ public class HomeActivity extends AppCompatActivity {
                 if (!imageStorageDir.exists()) {
                     imageStorageDir.mkdirs();
                 }
-
                 // create an image file name
                 imageStorageDir = new File(imageStorageDir + File.separator + "IMG_" + String.valueOf(System.currentTimeMillis()) + ".jpg");
                 return imageStorageDir;
             }
-
             // openFileChooser for Android 3.0+
             public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType) {
                 mUploadMessage = uploadMsg;
-
                 try {
                     File imageStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "DirectoryNameHere");
 
@@ -191,22 +199,17 @@ public class HomeActivity extends AppCompatActivity {
                     Intent i = new Intent(Intent.ACTION_GET_CONTENT);
                     i.addCategory(Intent.CATEGORY_OPENABLE);
                     i.setType("image/*");
-
                     Intent chooserIntent = Intent.createChooser(i, getString(R.string.image_chooser));
                     chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Parcelable[]{captureIntent});
-
                     startActivityForResult(chooserIntent, FILECHOOSER_RESULTCODE);
                 } catch (Exception e) {
                     Toast.makeText(getBaseContext(), "Camera Exception:" + e, Toast.LENGTH_LONG).show();
                 }
-
             }
-
             // openFileChooser for Android < 3.0
             public void openFileChooser(ValueCallback<Uri> uploadMsg) {
                 openFileChooser(uploadMsg, "");
             }
-
             // openFileChooser for other Android versions
             /* may not work on KitKat due to lack of implementation of openFileChooser() or onShowFileChooser()
                https://code.google.com/p/android/issues/detail?id=62220
@@ -214,9 +217,6 @@ public class HomeActivity extends AppCompatActivity {
             public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
                 openFileChooser(uploadMsg, acceptType);
             } //end file chooser
-
-
-
         });
 
         //swipe refresh
@@ -225,7 +225,9 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 swipeRefreshLayout.setRefreshing(true);
+                internetCheck();
                 webView.reload();
+
             }
         });
 
@@ -260,18 +262,28 @@ public class HomeActivity extends AppCompatActivity {
                 dm.enqueue(request);
                 Toast.makeText(getApplicationContext(),"Downloading File",Toast.LENGTH_SHORT).show();
 
-
             }
         });
-
-
 
         //progress dialog
         pd = new ProgressDialog(HomeActivity.this);
         pd.setMessage("Loading Please Wait...");
-
         webView.setWebViewClient(new pdjr(pd));
         pd.setCanceledOnTouchOutside(false);
+
+        //initialize internet connection
+        nointernetBtn = (Button) findViewById(R.id.retry);
+        relativeLayout = (RelativeLayout) findViewById(R.id.nointernet);
+
+        internetCheck();
+
+        nointernetBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                internetCheck();
+            }
+        });
+
     }
     //upload function
 
@@ -361,9 +373,7 @@ public class HomeActivity extends AppCompatActivity {
             if(pd.isShowing()){
                 pd.dismiss();
             }
-
         }
-
     }
     //back button function
     @Override
@@ -390,4 +400,29 @@ public class HomeActivity extends AppCompatActivity {
             alertDialog.show();
         }
     }
-}
+
+         //check internet connection
+        public void internetCheck() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mobiledata = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        NetworkInfo wifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        if (mobiledata.isConnected()) {
+            webView.setVisibility(View.VISIBLE);
+            swipeRefreshLayout.setVisibility(View.VISIBLE);
+            relativeLayout.setVisibility(View.GONE);
+            webView.reload();
+
+        } else if (wifi.isConnected()) {
+            webView.setVisibility(View.VISIBLE);
+            swipeRefreshLayout.setVisibility(View.VISIBLE);
+            relativeLayout.setVisibility(View.GONE);
+            webView.reload();
+        } else {
+            webView.setVisibility(View.GONE);
+            swipeRefreshLayout.setVisibility(View.GONE);
+            relativeLayout.setVisibility(View.VISIBLE);
+            webView.reload();
+             }
+        }
+    }
